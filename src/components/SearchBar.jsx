@@ -1,5 +1,6 @@
 import React, { useState, useContext, useEffect, useRef } from "react";
 import WeatherContext from "../context/WeatherContext";
+import cities from "../data/cities.json"; // static import of cities.json
 
 const SearchBar = ({ onSearch }) => {
   const [city, setCity] = useState("");
@@ -8,15 +9,26 @@ const SearchBar = ({ onSearch }) => {
   const { recentCities, clearRecentCities } = useContext(WeatherContext);
   const suggestionsRef = useRef(null);
 
-  // Filter recent cities based on input
-  const filteredSuggestions = recentCities.filter((item) =>
-    item.toLowerCase().includes(city.toLowerCase())
-  );
+const filteredSuggestions =
+  city.trim().length > 0
+    ? [
+        ...recentCities.filter((item) =>
+          item.toLowerCase().includes(city.toLowerCase())
+        ),
+        ...cities
+          .filter(
+            (item) =>
+              item.toLowerCase().includes(city.toLowerCase()) &&
+              !recentCities.includes(item)
+          )
+          .slice(0, 10),
+      ]
+    : [];
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (city.trim() === "") return;
-    onSearch(city);
+    onSearch(city.trim());
     setCity("");
     setShowSuggestions(false);
     setHighlightedIndex(-1);
@@ -43,7 +55,7 @@ const SearchBar = ({ onSearch }) => {
         prev > 0 ? prev - 1 : filteredSuggestions.length - 1
       );
     } else if (e.key === "Enter") {
-      if (highlightedIndex >= 0 && highlightedIndex < filteredSuggestions.length) {
+      if (highlightedIndex >= 0) {
         e.preventDefault();
         handleSelectSuggestion(filteredSuggestions[highlightedIndex]);
       }
@@ -85,7 +97,7 @@ const SearchBar = ({ onSearch }) => {
             {filteredSuggestions.map((item, idx) => (
               <li
                 key={idx}
-                onMouseDown={() => handleSelectSuggestion(item)} // Fix mouse selection issue
+                onMouseDown={() => handleSelectSuggestion(item)}
                 className={`px-4 py-2 cursor-pointer ${
                   highlightedIndex === idx
                     ? "bg-blue-100 font-medium"
@@ -96,15 +108,17 @@ const SearchBar = ({ onSearch }) => {
               </li>
             ))}
           </ul>
-          <button
-            onMouseDown={(e) => {
-              e.preventDefault(); // Prevent input blur
-              clearRecentCities();
-            }}
-            className="w-full text-center text-sm text-red-500 py-2 border-t hover:bg-gray-50"
-          >
-            Clear Recent
-          </button>
+          {recentCities.length > 0 && (
+            <button
+              onMouseDown={(e) => {
+                e.preventDefault();
+                clearRecentCities();
+              }}
+              className="w-full text-center text-sm text-red-500 py-2 border-t hover:bg-gray-50"
+            >
+              Clear Recent
+            </button>
+          )}
         </div>
       )}
     </div>
