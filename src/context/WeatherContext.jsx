@@ -9,6 +9,7 @@ export const WeatherProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [city, setCity] = useState("");
+  const [recentCities, setRecentCities] = useState([]);
 
   const fetchWeather = async (cityName) => {
     try {
@@ -26,6 +27,11 @@ export const WeatherProvider = ({ children }) => {
       setWeather(data);
       setCity(cityName);
       localStorage.setItem("lastCity", cityName);
+      setRecentCities((prev) => {
+        const updated = [cityName, ...prev.filter(c => c !== cityName)].slice(0, 5);
+        localStorage.setItem("recentCities", JSON.stringify(updated));
+        return updated;
+      });
     } catch (err) {
       setError(err.message);
       setWeather(null);
@@ -36,12 +42,20 @@ export const WeatherProvider = ({ children }) => {
 
   useEffect(() => {
     const savedCity = localStorage.getItem("lastCity");
+    const savedRecent = JSON.parse(localStorage.getItem("recentCities")) || [];
+    setRecentCities(savedRecent);
     if (savedCity) fetchWeather(savedCity);
   }, []);
 
+  const clearRecentCities = () => {
+  localStorage.removeItem("recentCities");
+  setRecentCities([]);
+};
+
+
   return (
     <WeatherContext.Provider
-      value={{ weather, loading, error, fetchWeather }}
+      value={{ weather, loading, error, fetchWeather, recentCities, clearRecentCities }}
     >
       {children}
     </WeatherContext.Provider>
