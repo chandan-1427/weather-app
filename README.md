@@ -14,8 +14,10 @@ A clean and intuitive weather application built with **React + Vite + TailwindCS
 - 💻 Fully responsive design (mobile, tablet, desktop)
 - 🔄 Loading spinner during data fetch for smooth UX
 
----
+# Live link:
+https://weather-app-iota-dusky-88.vercel.app/
 
+---
 ## 🛠️ Tech Stack
 
 - **Framework:** [React](https://reactjs.org/)
